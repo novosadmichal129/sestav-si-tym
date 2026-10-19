@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sestav si tým</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1b1230; --bg2:#26193f; --panel:#2f2150; --ink:#f4eedf; --muted:#b9add2; --gold:#e3b341; --gold2:#ffd66b;
+  --red:#e2575a; --green:#5bc887;
+  --elf:#4caf7a; --hor:#d9733f; --sti:#8b6bd6; --dra:#e0b030;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#352356 0%,var(--bg) 60%) fixed;color:var(--ink);font-family:Nunito,system-ui,sans-serif;min-height:100vh}
+h1,h2,h3{font-family:Cinzel,serif;margin:0}
+header{text-align:center;padding:22px 16px 6px}
+header h1{font-size:clamp(28px,6vw,46px);color:var(--gold2);letter-spacing:2px;text-shadow:0 3px 0 #6b4a10}
+header p{color:var(--muted);margin:6px 0 0}
+nav{display:flex;justify-content:center;gap:8px;padding:14px 16px;flex-wrap:wrap;position:sticky;top:0;background:rgba(27,18,48,.92);backdrop-filter:blur(6px);z-index:5}
+nav button{font:800 15px Nunito;padding:10px 18px;border-radius:999px;border:2px solid var(--gold);background:transparent;color:var(--gold2);cursor:pointer}
+nav button.on{background:var(--gold);color:#2a1a05}
+main{max-width:1150px;margin:0 auto;padding:10px 16px 140px}
+section{display:none}section.on{display:block}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 16px}
+.bar select,.bar input{font:700 15px Nunito;padding:9px 12px;border-radius:10px;border:2px solid #4a3878;background:var(--bg2);color:var(--ink)}
+.bar label{color:var(--muted);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.card{position:relative;background:linear-gradient(160deg,var(--panel),#21173a);border:3px solid var(--fc);border-radius:16px;padding:12px;cursor:pointer;transition:transform .12s, box-shadow .12s;user-select:none}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.card.picked{box-shadow:0 0 0 4px var(--gold2),0 8px 20px rgba(0,0,0,.4)}
+.card.picked::after{content:"✓ v týmu";position:absolute;top:-11px;right:10px;background:var(--gold2);color:#2a1a05;font-weight:800;font-size:12px;padding:2px 8px;border-radius:999px}
+.cost{position:absolute;top:10px;right:10px;background:var(--gold);color:#2a1a05;font-weight:800;border-radius:999px;min-width:34px;height:34px;display:grid;place-items:center;font-size:16px;box-shadow:inset 0 -3px 0 #a47716}
+.num{position:absolute;top:10px;left:12px;color:var(--muted);font-weight:800;font-size:13px}
+.icon{font-size:46px;text-align:center;margin:14px 0 4px}
+.name{font-family:Cinzel,serif;font-weight:700;text-align:center;font-size:16px;line-height:1.15}
+.tags{display:flex;justify-content:center;gap:6px;margin:6px 0 10px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--fc);color:#1b1230}
+.tag.cls{background:#463468;color:var(--ink)}
+.st{display:grid;grid-template-columns:62px 1fr 22px;align-items:center;gap:6px;font-size:13px;margin:4px 0}
+.st .b{height:9px;background:#3d2d61;border-radius:9px;overflow:hidden}
+.st .b i{display:block;height:100%;border-radius:9px}
+.st b{text-align:right}
+.abil{margin-top:8px;text-align:center;font-size:12px;color:var(--muted);font-style:italic}
+/* team bar */
+#teambar{position:fixed;left:0;right:0;bottom:0;background:#120b22;border-top:3px solid var(--gold);padding:10px 16px;z-index:10}
+#teambar .in{max-width:1150px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.slots{display:flex;gap:6px;flex:1;min-width:260px}
+.slot{flex:1;min-width:44px;height:52px;border:2px dashed #4a3878;border-radius:10px;display:grid;place-items:center;font-size:24px;position:relative;cursor:pointer}
+.slot.full{border-style:solid;border-color:var(--fc);background:var(--bg2)}
+.slot small{position:absolute;bottom:1px;font-size:9px;font-weight:800;color:var(--muted);white-space:nowrap;overflow:hidden;max-width:100%}
+.stats{display:flex;gap:14px;font-weight:800;flex-wrap:wrap}
+.stats .ok{color:var(--green)}.stats .bad{color:var(--red)}
+.btn{font:800 16px Nunito;padding:12px 20px;border-radius:12px;border:none;background:var(--gold);color:#2a1a05;cursor:pointer;box-shadow:inset 0 -4px 0 #a47716}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--gold2);border:2px solid var(--gold);box-shadow:none}
+.box{background:var(--panel);border-radius:16px;padding:18px;margin-bottom:16px}
+.codein{display:flex;gap:8px;flex-wrap:wrap}
+.codein input{flex:1;min-width:200px;font:800 22px Consolas,monospace;letter-spacing:2px;padding:10px 14px;border-radius:12px;border:2px solid var(--gold);background:var(--bg2);color:var(--gold2)}
+.msg{margin-top:10px;font-weight:700}
+.msg.err{color:var(--red)}.msg.ok{color:var(--green)}
+.order{display:grid;gap:8px;margin-top:10px}
+.orow{display:flex;align-items:center;gap:10px;background:var(--bg2);border-left:6px solid var(--fc);border-radius:10px;padding:8px 10px}
+.orow .ic{font-size:26px}.orow .nm{flex:1;font-weight:800}
+.orow .sv{font-size:13px;color:var(--muted)}
+.orow button{font-size:16px;border:none;background:#463468;color:var(--ink);border-radius:8px;width:34px;height:34px;cursor:pointer}
+/* battle */
+.arena{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin:16px 0}
+.arena .card{cursor:default}
+.arena .card:hover{transform:none}
+.vs{text-align:center}
+.dice{font-size:54px;display:inline-block}
+.dice.roll{animation:spin .6s ease-out}
+@keyframes spin{from{transform:rotate(0) scale(.6)}to{transform:rotate(720deg) scale(1)}}
+.statname{font-family:Cinzel;font-size:22px;color:var(--gold2);margin-top:6px}
+.card.win{box-shadow:0 0 0 5px var(--green),0 0 30px var(--green)}
+.card.lose{opacity:.45;filter:grayscale(.7)}
+.hl{background:rgba(227,179,65,.25);border-radius:6px}
+.score{display:flex;justify-content:center;gap:24px;align-items:center;font-family:Cinzel;font-size:30px}
+.score span{font-size:14px;font-family:Nunito;color:var(--muted);display:block;text-align:center}
+.rounds{display:flex;justify-content:center;gap:8px;margin:10px 0}
+.rounds i{width:16px;height:16px;border-radius:50%;background:#463468;display:block}
+.rounds i.w{background:var(--green)}.rounds i.l{background:var(--red)}.rounds i.d{background:var(--muted)}
+.result{text-align:center;font-family:Cinzel;font-size:34px;margin:10px 0}
+.center{text-align:center}
+.rules li{margin:6px 0}
+@media (max-width:640px){.arena{grid-template-columns:1fr}.vs{order:-1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚔ Sestav si tým ⚔</h1>
+  <p>Rozpočet 30 zlaťáků · max. 5 postav · synergie frakcí</p>
+</header>
+<nav>
+  <button data-tab="gal" class="on">🃏 Postavy</button>
+  <button data-tab="team">🛡️ Můj tým</button>
+  <button data-tab="fight">🎲 Souboj</button>
+</nav>
+<main>
+<section id="gal" class="on">
+  <div class="bar">
+    <label>Frakce</label>
+    <select id="fFr"><option value="">všechny</option><option>Elfové</option><option>Horalé</option><option>Stínovci</option><option>Draci</option></select>
+    <label>Třída</label>
+    <select id="fCl"><option value="">všechny</option><option>Válečník</option><option>Mág</option><option>Lučištník</option><option>Léčitel</option><option>Zloděj</option><option>Tank</option></select>
+    <label>Seřadit</label>
+    <select id="fSo"><option value="num">podle čísla</option><option value="cena">cena ↓</option><option value="utok">útok ↓</option><option value="obrana">obrana ↓</option><option value="zivoty">životy ↓</option><option value="sila">součet statů ↓</option></select>
+    <label>Max. cena</label>
+    <input id="fMax" type="number" min="1" max="9" placeholder="—" style="width:70px">
+  </div>
+  <p style="color:var(--muted);margin-top:-6px">Klikni na kartu a přidáš ji do týmu (nebo ji z týmu odebereš).</p>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="team">
+  <div class="box">
+    <h3>Vlož kód týmu z Excelu</h3>
+    <p style="color:var(--muted)">Najdeš ho na listu <b>Můj tým</b> dole, např. <code>08-07-09-03-11</code>.</p>
+    <div class="codein"><input id="code" placeholder="08-07-09-03-11" autocomplete="off"><button class="btn" id="load">Načíst tým</button></div>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div class="box">
+    <h3>Pořadí do souboje</h3>
+    <p style="color:var(--muted)">V souboji nastoupí 1. proti 1., 2. proti 2. atd. Šipkami změníš pořadí. Kód tvého týmu: <b id="mycode" style="color:var(--gold2);font-family:Consolas,monospace"></b></p>
+    <div class="order" id="order"></div>
+    <div class="center" style="margin-top:16px"><button class="btn" id="toFight">🎲 Do souboje!</button></div>
+  </div>
+</section>
+
+<section id="fight">
+  <div class="box" id="intro">
+    <h3>Jak se hraje</h3>
+    <ul class="rules">
+      <li>Proti tobě nastoupí <b>náhodný tým</b> počítače (taky do 30 zlaťáků).</li>
+      <li>Hraje se <b>5 kol</b>. V každém proti sobě stojí jedna tvoje a jedna nepřátelská postava.</li>
+      <li>Kostka určí, <b>který stat</b> rozhoduje: útok, obrana, nebo životy. Vyšší číslo vyhrává.</li>
+      <li>Postavy s aktivní <b>synergií</b> mají bonus: 2 stejné frakce +1, 3 a víc +2 ke všem statům.</li>
+      <li>Prázdné místo v týmu kolo automaticky prohrává.</li>
+    </ul>
+    <div class="center"><button class="btn" id="start">Začít souboj</button></div>
+  </div>
+  <div id="battle" style="display:none">
+    <div class="score"><div><b id="sMe">0</b><span>ty</span></div>:<div><b id="sAi">0</b><span>počítač</span></div></div>
+    <div class="rounds" id="dots"></div>
+    <div class="arena">
+      <div id="cMe"></div>
+      <div class="vs"><div class="dice" id="dice">🎲</div><div class="statname" id="stName">Kolo 1</div><div id="rRes" style="margin-top:6px;font-weight:800"></div></div>
+      <div id="cAi"></div>
+    </div>
+    <div class="center"><button class="btn" id="next">Hodit kostkou</button></div>
+    <div class="result" id="final"></div>
+    <div class="center" id="again" style="display:none;gap:10px">
+      <button class="btn" id="replay">Nový soupeř</button>
+      <button class="btn ghost" id="edit">Upravit tým</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<div id="teambar"><div class="in">
+  <div class="slots" id="slots"></div>
+  <div class="stats" id="tstats"></div>
+</div></div>
+
+<script>
+const P=[
+["Lyra Stříbrná","Mág","Elfové",7,9,2,5,"Ohnivá koule"],
+["Fenrel Šíp","Lučištník","Elfové",5,7,3,5,"Dvojitý výstřel"],
+["Aeris Lístek","Léčitel","Elfové",3,2,3,6,"Léčivý déšť"],
+["Taliel Měsíční","Zloděj","Elfové",4,6,2,4,"Úskok"],
+["Orin Kmen","Tank","Elfové",6,3,8,9,"Kořenový štít"],
+["Saela Bouře","Mág","Elfové",9,10,3,7,"Blesková bouře"],
+["Borak Železný","Válečník","Horalé",5,7,6,7,"Úder štítem"],
+["Grum Skála","Tank","Horalé",7,4,10,9,"Kamenná kůže"],
+["Hilda Kovářka","Léčitel","Horalé",4,3,5,7,"Obvazy"],
+["Dorn Sekera","Válečník","Horalé",8,9,7,8,"Vířivý útok"],
+["Brana Kuše","Lučištník","Horalé",3,5,3,5,"Přesná rána"],
+["Olaf Medvěd","Válečník","Horalé",2,4,3,4,"Řev"],
+["Tim Rychlonožka","Zloděj","Stínovci",3,6,2,4,"Neviditelnost"],
+["Nyx Temná","Mág","Stínovci",6,8,2,5,"Prokletí"],
+["Kael Dýka","Zloděj","Stínovci",7,9,3,5,"Smrtící bodnutí"],
+["Mora Mlha","Léčitel","Stínovci",5,3,4,6,"Temná obnova"],
+["Vex Stín","Lučištník","Stínovci",2,4,1,3,"Jedovatý šíp"],
+["Grax Plášť","Tank","Stínovci",5,3,7,8,"Stínový štít"],
+["Ignis Plamen","Mág","Draci",8,9,4,7,"Dračí dech"],
+["Rhaeg Šupina","Tank","Draci",9,5,9,10,"Ohnivý pancíř"],
+["Zara Křídlo","Lučištník","Draci",6,8,4,5,"Útok z výšky"],
+["Ember Jiskra","Léčitel","Draci",7,4,5,8,"Fénixovo peří"],
+["Torvak Drápy","Válečník","Draci",6,7,6,6,"Drtivý stisk"],
+["Pip Dráček","Zloděj","Draci",1,2,1,2,"Kousnutí"]
+].map((r,i)=>({id:i+1,jmeno:r[0],trida:r[1],frakce:r[2],cena:r[3],utok:r[4],obrana:r[5],zivoty:r[6],schop:r[7]}));
+const BUDGET=30, MAX=5;
+const ICON={"Válečník":"⚔️","Mág":"🔮","Lučištník":"🏹","Léčitel":"💚","Zloděj":"🗡️","Tank":"🛡️"};
+const FC={"Elfové":"var(--elf)","Horalé":"var(--hor)","Stínovci":"var(--sti)","Draci":"var(--dra)"};
+const STATS=[["utok","Útok","#e2575a"],["obrana","Obrana","#5b9be0"],["zivoty","Životy","#5bc887"]];
+const $=s=>document.querySelector(s);
+const byId=id=>P.find(p=>p.id===id);
+let team=[];
+try{const s=JSON.parse(localStorage.getItem("tym")||"[]");if(Array.isArray(s))team=s.filter(byId).slice(0,MAX)}catch(e){}
+const save=()=>{try{localStorage.setItem("tym",JSON.stringify(team))}catch(e){}};
+
+function fracCount(ids){const c={};ids.forEach(i=>{const f=byId(i).frakce;c[f]=(c[f]||0)+1});return c}
+function synBonus(ids){const c=fracCount(ids);let b=0;for(const f in c){if(c[f]>=3)b+=12;else if(c[f]>=2)b+=5}return b}
+function lvl(ids,id){const n=fracCount(ids)[byId(id).frakce];return n>=3?2:n>=2?1:0}
+function cost(ids){return ids.reduce((s,i)=>s+byId(i).cena,0)}
+function power(ids){return ids.reduce((s,i)=>{const p=byId(i);return s+p.utok+p.obrana+p.zivoty},0)+synBonus(ids)}
+const code=ids=>ids.map(i=>String(i).padStart(2,"0")).join("-");
+
+function cardHTML(p,opts={}){
+  const bonus=opts.bonus||0, hl=opts.hl;
+  return `<div class="card ${opts.cls||""}" style="--fc:${FC[p.frakce]}" data-id="${p.id}">
+    <div class="num">#${String(p.id).padStart(2,"0")}</div><div class="cost">${p.cena}</div>
+    <div class="icon">${ICON[p.trida]}</div><div class="name">${p.jmeno}</div>
+    <div class="tags"><span class="tag">${p.frakce}</span><span class="tag cls">${p.trida}</span></div>
+    ${STATS.map(([k,l,c])=>`<div class="st ${hl===k?"hl":""}"><span>${l}</span><div class="b"><i style="width:${p[k]*10}%;background:${c}"></i></div><b>${p[k]}${bonus?`<small style="color:var(--gold2)">+${bonus}</small>`:""}</b></div>`).join("")}
+    <div class="abil">✦ ${p.schop}</div></div>`;
+}
+function renderGrid(){
+  let list=P.filter(p=>(!$("#fFr").value||p.frakce===$("#fFr").value)&&(!$("#fCl").value||p.trida===$("#fCl").value));
+  const mx=parseInt($("#fMax").value);if(mx)list=list.filter(p=>p.cena<=mx);
+  const so=$("#fSo").value;
+  if(so!=="num")list.sort((a,b)=>so==="sila"?(b.utok+b.obrana+b.zivoty)-(a.utok+a.obrana+a.zivoty):b[so]-a[so]);
+  $("#grid").innerHTML=list.length?list.map(p=>cardHTML(p,{cls:team.includes(p.id)?"picked":""})).join(""):"<p>Žádná postava neodpovídá filtru.</p>";
+}
+function renderBar(){
+  $("#slots").innerHTML=Array.from({length:MAX},(_,k)=>{const id=team[k];if(!id)return `<div class="slot">+</div>`;const p=byId(id);
+    return `<div class="slot full" style="--fc:${FC[p.frakce]}" data-rm="${id}" title="Odebrat ${p.jmeno}">${ICON[p.trida]}<small>${p.jmeno.split(" ")[0]}</small></div>`}).join("");
+  const c=cost(team),ok=c<=BUDGET;
+  const syn=Object.entries(fracCount(team)).filter(([f,n])=>n>=2).map(([f,n])=>`${f} ${n}×`).join(", ")||"žádná";
+  $("#tstats").innerHTML=`<span class="${ok?"ok":"bad"}">💰 ${c} / ${BUDGET}</span><span>✨ Synergie: ${syn}</span><span>💪 Síla: ${ok?power(team):"neplatný tým"}</span>`;
+  $("#mycode").textContent=team.length?code(team):"—";
+  renderOrder();
+}
+function renderOrder(){
+  $("#order").innerHTML=team.length?team.map((id,k)=>{const p=byId(id);return `<div class="orow" style="--fc:${FC[p.frakce]}">
+    <b>${k+1}.</b><span class="ic">${ICON[p.trida]}</span><span class="nm">${p.jmeno}</span>
+    <span class="sv">Ú ${p.utok} · O ${p.obrana} · Ž ${p.zivoty}</span>
+    <button data-up="${k}" title="Nahoru">▲</button><button data-dn="${k}" title="Dolů">▼</button></div>`}).join("")
+    :`<p style="color:var(--muted)">Zatím nemáš žádné postavy. Vlož kód nebo klikej na karty v záložce Postavy.</p>`;
+  $("#toFight").disabled=!team.length||cost(team)>BUDGET;
+}
+function toggle(id){
+  if(team.includes(id))team=team.filter(i=>i!==id);
+  else{if(team.length>=MAX){alert("Tým je plný – max. 5 postav.");return}
+    if(cost(team)+byId(id).cena>BUDGET){alert(`Na ${byId(id).jmeno} už nemáš dost zlaťáků (zbývá ${BUDGET-cost(team)}).`);return}
+    team.push(id)}
+  save();renderGrid();renderBar();
+}
+function show(tab){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===tab));window.scrollTo(0,0);
+  if(tab==="fight"){$("#intro").style.display="block";$("#battle").style.display="none"}}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.tab));
+["#fFr","#fCl","#fSo","#fMax"].forEach(s=>$(s).addEventListener("input",renderGrid));
+$("#grid").onclick=e=>{const c=e.target.closest(".card");if(c)toggle(+c.dataset.id)};
+$("#slots").onclick=e=>{const s=e.target.closest("[data-rm]");if(s)toggle(+s.dataset.rm)};
+$("#order").onclick=e=>{const u=e.target.dataset.up,d=e.target.dataset.dn;
+  if(u!==undefined&&+u>0){[team[+u-1],team[+u]]=[team[+u],team[+u-1]]}
+  if(d!==undefined&&+d<team.length-1){[team[+d+1],team[+d]]=[team[+d],team[+d+1]]}
+  save();renderBar()};
+$("#load").onclick=()=>{
+  const raw=$("#code").value.match(/\d+/g)||[],m=$("#msg");m.className="msg err";
+  const ids=raw.map(Number);
+  if(!ids.length){m.textContent="Kód je prázdný.";return}
+  if(ids.some(i=>i<1||i>P.length)){m.textContent="V kódu je číslo postavy, které neexistuje (povolená jsou 01–24).";return}
+  if(ids.length>MAX){m.textContent="V týmu může být nejvýš 5 postav.";return}
+  if(new Set(ids).size!==ids.length){m.textContent="Některá postava je v kódu dvakrát.";return}
+  if(cost(ids)>BUDGET){m.textContent=`Tým stojí ${cost(ids)} zlaťáků, rozpočet je jen ${BUDGET}.`;return}
+  team=ids;save();renderGrid();renderBar();m.className="msg ok";m.textContent=`Tým načten! Síla ${power(team)} – stejně jako v Excelu?`;
+};
+$("#code").addEventListener("keydown",e=>{if(e.key==="Enter")$("#load").click()});
+$("#toFight").onclick=()=>show("fight");
+
+/* ---- souboj ---- */
+let ai=[],round=0,sMe=0,sAi=0;
+function randomTeam(){
+  for(let t=0;t<500;t++){const pool=[...P].sort(()=>Math.random()-.5).slice(0,MAX).map(p=>p.id);if(cost(pool)<=BUDGET)return pool}
+  return [12,17,24,3,11];
+}
+function startBattle(){
+  if(!team.length||cost(team)>BUDGET){alert("Nejdřív si sestav platný tým.");show("team");return}
+  ai=randomTeam();round=0;sMe=0;sAi=0;
+  $("#intro").style.display="none";$("#battle").style.display="block";$("#final").textContent="";$("#again").style.display="none";
+  $("#next").style.display="inline-block";$("#next").textContent="Hodit kostkou";
+  $("#dots").innerHTML=Array.from({length:MAX},()=>"<i></i>").join("");
+  $("#sMe").textContent=0;$("#sAi").textContent=0;prep();
+}
+function prep(){
+  $("#stName").textContent=`Kolo ${round+1}`;$("#rRes").textContent="";$("#dice").textContent="🎲";
+  const me=team[round],a=ai[round];
+  $("#cMe").innerHTML=me?cardHTML(byId(me),{bonus:lvl(team,me)}):`<div class="box center">Prázdné místo</div>`;
+  $("#cAi").innerHTML=cardHTML(byId(a),{bonus:lvl(ai,a)});
+}
+function play(){
+  if($("#next").textContent==="Další kolo"){round++;prep();$("#next").textContent="Hodit kostkou";return}
+  const [k,l]=STATS[Math.floor(Math.random()*3)];
+  const d=$("#dice");d.classList.remove("roll");void d.offsetWidth;d.classList.add("roll");
+  d.textContent={utok:"⚔️",obrana:"🛡️",zivoty:"❤️"}[k];
+  const me=team[round],a=ai[round];
+  const vMe=me?byId(me)[k]+lvl(team,me):0, vAi=byId(a)[k]+lvl(ai,a);
+  $("#stName").textContent=l.toUpperCase();
+  $("#cMe").innerHTML=me?cardHTML(byId(me),{bonus:lvl(team,me),hl:k,cls:vMe>vAi?"win":vMe<vAi?"lose":""}):`<div class="box center">Prázdné místo</div>`;
+  $("#cAi").innerHTML=cardHTML(byId(a),{bonus:lvl(ai,a),hl:k,cls:vAi>vMe?"win":vAi<vMe?"lose":""});
+  const dot=$("#dots").children[round];
+  if(vMe>vAi){sMe++;dot.className="w";$("#rRes").textContent=`${vMe} : ${vAi} – vyhráváš kolo!`}
+  else if(vMe<vAi){sAi++;dot.className="l";$("#rRes").textContent=`${vMe} : ${vAi} – kolo pro počítač`}
+  else{dot.className="d";$("#rRes").textContent=`${vMe} : ${vAi} – remíza`}
+  $("#sMe").textContent=sMe;$("#sAi").textContent=sAi;
+  if(round<MAX-1){$("#next").textContent="Další kolo"}
+  else{$("#next").style.display="none";$("#again").style.display="flex";$("#again").style.justifyContent="center";
+    $("#final").textContent=sMe>sAi?"🏆 VÍTĚZSTVÍ!":sMe<sAi?"💀 Porážka…":"🤝 Remíza";
+    $("#final").style.color=sMe>sAi?"var(--green)":sMe<sAi?"var(--red)":"var(--muted)"}
+}
+$("#start").onclick=startBattle;$("#next").onclick=play;$("#replay").onclick=startBattle;$("#edit").onclick=()=>show("team");
+renderGrid();renderBar();
+</script>
+</body>
+</html>
